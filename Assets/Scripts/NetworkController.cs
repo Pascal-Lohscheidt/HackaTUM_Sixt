@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -74,6 +71,8 @@ public class NetworkController : MonoBehaviour
 
     public NetworkEdge[,] GetGraph() => graph;
 
+    public NetworkNode[] GetNodes() => nodes;
+    
     /// <summary>
     /// Get Distance with 0(1)
     /// </summary>

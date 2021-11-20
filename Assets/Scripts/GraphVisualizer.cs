@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +10,8 @@ public class GraphVisualizer : MonoBehaviour
 
     public void CreateGraphVisualization(NetworkEdge[,] graph)
     {
+        ClearVisualization();
+        
         // based on graph size create an offset
         Vector3 baseOffset = new Vector3((graph.GetLength(0) * gridSpacing) / 2, 0, (graph.GetLength(0) * gridSpacing) / 2);
         
@@ -25,7 +27,17 @@ public class GraphVisualizer : MonoBehaviour
 
     public void UpdateGraphVisualization()
     {
-        
+        throw new NotImplementedException();
+    }
+
+    public void ClearVisualization()
+    {
+        if (spawnedNodes.Count > 0)
+        {
+            for (int i = 0; i < spawnedNodes.Count; i++)
+                Destroy(spawnedNodes[i]);
+            spawnedNodes.Clear();
+        }
     }
 
     private void SpawnNode(Color color, Vector3 position)
