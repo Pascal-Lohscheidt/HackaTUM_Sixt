@@ -1872,7 +1872,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minAmountOfNodes: 6
-  maxAmountOfNodes: 12
+  maxAmountOfNodes: 7
   edgeDensity: 0.4
   seed: 6
   minDistance: 3

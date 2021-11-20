@@ -39,10 +39,11 @@ public class SimulationVisualizer : MonoBehaviour
         {
             for (int j = 0; j < graph.GetLength(0); j++)
             {
-                if (graph[i, j].Distance > 0)
+                if (graph[i, j].Distance > 0 && !edgeRepresentations.ContainsKey(graph[i, j]) && !edgeRepresentations.ContainsKey(graph[j, i]))
                 {
                     NetworkEdge edge = graph[i, j];
                     GameObject edgeRepresentation = Instantiate(lineRendererPrefab, Vector3.zero, Quaternion.identity);
+                    
                     edgeRepresentations.Add(edge, edgeRepresentation);
                     LineRenderer renderer = edgeRepresentation.GetComponent<LineRenderer>();
                     

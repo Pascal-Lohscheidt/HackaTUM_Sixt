@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 
 /// <summary>
 /// We went for a simple Dijkstra algorithm
@@ -12,8 +13,8 @@ public class ShortestPathCalculator
     public static NetworkEdge[] SolveShortestPathProblem(NetworkEdge[,] graph, EdgeCost GetEdgeCost, NetworkNode entry, NetworkNode target)
     {
         List<DijkstraSolution> solutionQueue = new List<DijkstraSolution>();
+        Dictionary<int, DijkstraDeadEntry> deadEntries = new Dictionary<int, DijkstraDeadEntry>();
         DijkstraSolution bestSolution = new DijkstraSolution();
-        List<NetworkEdge> queue = new List<NetworkEdge>(); //NICE <.NET6 doesn't have priority queue! Thanks guys Thanks!?!?!?!
 
         DijkstraSolution startPoint = new DijkstraSolution(graph[entry.Index, entry.Index], 0);
         solutionQueue.Add(startPoint);
@@ -23,7 +24,7 @@ public class ShortestPathCalculator
         
         while (solutionQueue.Count > 0)
         {
-            DijkstraIteration(graph, solutionQueue, GetEdgeCost, out bestSolution);
+            DijkstraIteration(graph, solutionQueue, GetEdgeCost, out bestSolution, deadEntries);
             
             //Terminate early to reduce redundant calls => possible there are no negative edge costs
             if (bestSolution.LastNode().Index == target.Index &&
@@ -39,10 +40,19 @@ public class ShortestPathCalculator
     }
 
 
-    private static void DijkstraIteration(NetworkEdge[,] graph, List<DijkstraSolution> queue, EdgeCost GetEdgeCost,  out DijkstraSolution bestSolution)
+    private static void DijkstraIteration(
+        NetworkEdge[,] graph, 
+        List<DijkstraSolution> queue, 
+        EdgeCost GetEdgeCost,  
+        out DijkstraSolution bestSolution, 
+        Dictionary<int, DijkstraDeadEntry> deadEntries)
     {
         // 1) get min
         DijkstraSolution minSolution = GetFirstInQueue(queue);
+        
+        // => make sure it's a dead entry now! Prevent circle
+        if(!deadEntries.ContainsKey(minSolution.LastNode().Index))
+            deadEntries.Add(minSolution.LastNode().Index, new DijkstraDeadEntry(minSolution.LastNode(), minSolution.GetSolutionCost()));
         
         // 2) Add all adjacent nodes
         for (int i = 0; i < graph.GetLength(0); i++)
@@ -51,6 +61,13 @@ public class ShortestPathCalculator
             float cost = GetEdgeCost(edge);
             if (cost > 0)
             {
+                if (deadEntries.ContainsKey(i))
+                {
+                    if(deadEntries[i].Cost < minSolution.GetSolutionCost() + cost) continue;
+                    
+                    deadEntries[i] = new DijkstraDeadEntry(edge.NodeB, minSolution.GetSolutionCost() + cost);
+                }
+
                 DijkstraSolution newSolution = minSolution.CopySolution();
                 newSolution.AddNetworkEdge(edge, cost);
                 queue.Add(newSolution);
@@ -113,8 +130,19 @@ public class ShortestPathCalculator
         public NetworkEdge[] GetNetworkEdges() => networkEdges.ToArray();
         public NetworkNode LastNode() => networkEdges.Last().NodeB;
     }
-    
-    
+
+    public struct DijkstraDeadEntry
+    {
+        public NetworkNode Node { get; }
+        public float Cost { get; }
+
+        public DijkstraDeadEntry(NetworkNode node, float cost)
+        {
+            Node = node;
+            Cost = cost;
+        }
+        
+    }
     
     
 }
