@@ -7,16 +7,17 @@ public class SimulationController : MonoBehaviour
     public static float timeScale;
     [SerializeField] private NetworkController networkController;
     [SerializeField] private GraphVisualizer graphVisualizer;
-
+    [SerializeField] private SimulationVisualizer simulationVisualizer;
+    
     private void Start()
     {
-        RegenerateSimulationState();
+        
     }
 
     public void RegenerateSimulationState()
     {
         networkController.GenerateNewNetwork();
-        graphVisualizer.CreateGraphVisualization(networkController.GetGraph());
+        simulationVisualizer.CreateSimulationState(networkController.GetGraph(), networkController.GetNodes());
 
         // Get shortest route test
         NetworkEdge[] solution = ShortestPathCalculator
@@ -24,7 +25,6 @@ public class SimulationController : MonoBehaviour
                 (edge) => edge.Distance,
                 networkController.GetNodes()[2],
                 networkController.GetNodes()[5]);
-        
         
         Debug.Log(solution.Length);
         String path = "Path is: ";
@@ -35,11 +35,14 @@ public class SimulationController : MonoBehaviour
 
         path += solution[solution.Length - 1].NodeB.Index;
         Debug.Log(path);
+        
+        simulationVisualizer.HighlightPath(solution);
     }
     
     public void StartSimulation()
     {
         Debug.Log("Start Simulation!");
+        RegenerateSimulationState();
     }
 
     public void PauseSimulation()

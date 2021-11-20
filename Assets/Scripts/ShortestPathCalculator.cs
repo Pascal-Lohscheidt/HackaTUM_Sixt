@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-
 
 /// <summary>
 /// We went for a simple Dijkstra algorithm
@@ -20,7 +17,8 @@ public class ShortestPathCalculator
 
         DijkstraSolution startPoint = new DijkstraSolution(graph[entry.Index, entry.Index], 0);
         solutionQueue.Add(startPoint);
-        
+
+        int iterationBreak = 0;
         // Iterate
         
         while (solutionQueue.Count > 0)
@@ -31,6 +29,9 @@ public class ShortestPathCalculator
             if (bestSolution.LastNode().Index == target.Index &&
                 solutionQueue.Count > 0 &&
                 solutionQueue[0].GetSolutionCost() >= bestSolution.GetSolutionCost()) break; // Found a solution
+
+            if (iterationBreak == 3000) break;
+            iterationBreak++;
         }
         
         // Convert & return solution
