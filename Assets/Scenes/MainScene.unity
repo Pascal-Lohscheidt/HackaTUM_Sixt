@@ -5917,7 +5917,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34a542fe38d244cff9edb67d9e7761f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amountOfCars: 4
+  amountOfCars: 2
   executionIntervalLength: 0.4
 --- !u!114 &2113189045
 MonoBehaviour:
