@@ -17,6 +17,7 @@ public class SixtCar
         Index = index;
         CurrentNode = networkNode;
         RegisterForBooking();
+        path = new NetworkEdge[0];
     }
 
     private void RegisterForBooking()
@@ -41,12 +42,14 @@ public class SixtCar
         UnregisterFromBooking();
         CarController.Instance.ExecuteCarLogic += Execute;
         NetworkController networkController = NetworkController.Instance;
+        if(path.Length > 0)
+            SimulationVisualizer.Instance.HidePath(path);
         path = ShortestPathCalculator.SolveShortestPathProblem(
             networkController.GetGraph(),
             (edge) => edge.Distance,
             CurrentNode,
             networkController.GetNodes()[AssignedBooking.StartNode]);
-        SimulationVisualizer.Instance.ResetHighlight(networkController.GetGraph());
+        
         SimulationVisualizer.Instance.HighlightPath(path);
         customerOnBoard = false;
     }
@@ -84,19 +87,23 @@ public class SixtCar
             CarController.Instance.ExecuteCarLogic -= Execute;
             RegisterForBooking();
             OnNewBookingAvailable();
-            path = null;
+            if(path.Length > 0)
+                SimulationVisualizer.Instance.HidePath(path);
+            path = new NetworkEdge[0];
         }
         else
         {
             customerOnBoard = true;
             NetworkController networkController = NetworkController.Instance;
+            if(path.Length > 0)
+                SimulationVisualizer.Instance.HidePath(path);
+            
+            HUDController.Instance.DisablePerson(AssignedBooking);
             path = ShortestPathCalculator.SolveShortestPathProblem(
                 networkController.GetGraph(),
                 (edge) => edge.Distance,
                 CurrentNode,
                 networkController.GetNodes()[AssignedBooking.EndNode]);
-            
-            SimulationVisualizer.Instance.ResetHighlight(networkController.GetGraph());
             SimulationVisualizer.Instance.HighlightPath(path);
         }
     }

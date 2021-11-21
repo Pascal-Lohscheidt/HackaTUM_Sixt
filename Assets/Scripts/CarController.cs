@@ -30,6 +30,7 @@ public class CarController : Singleton<CarController>
       {
          executionTimeStamp = Time.time;
          ExecuteCarLogic?.Invoke();
+         HUDController.Instance.UpdateCars(cars);
       }
    }
 

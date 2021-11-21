@@ -46,6 +46,7 @@ public class BookingController : Singleton<BookingController>
         if (start == end) start = (start + end) % networkController.GetNodes().Length - 1;
         BookingData data = new BookingData(start, end, Time.time);
         bookings.Enqueue(data);
+        HUDController.Instance.EnablePerson(data);
         CarController.Instance.CheckForBookings();
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 public class SimulationVisualizer : Singleton<SimulationVisualizer>
 {
@@ -16,9 +17,8 @@ public class SimulationVisualizer : Singleton<SimulationVisualizer>
     private Dictionary<NetworkNode, GameObject> nodeRepresentations = new Dictionary<NetworkNode, GameObject>();
     private Dictionary<NetworkEdge, GameObject> edgeRepresentations = new Dictionary<NetworkEdge, GameObject>();
     
-    private Dictionary<NetworkEdge, GameObject> highlightedEdges = new Dictionary<NetworkEdge, GameObject>();
     private Dictionary<NetworkEdge, int> highlightedEdgesTokens = new Dictionary<NetworkEdge, int>();
-    private Dictionary<NetworkNode, GameObject> highlightedNodes = new Dictionary<NetworkNode, GameObject>();
+    private Dictionary<NetworkNode, int> highlightedNodesTokens = new Dictionary<NetworkNode, int>();
     public void CreateSimulationState(NetworkEdge[,] graph, NetworkNode[] nodes, int graphWidth)
     {
         DeleteOldVisualization();
@@ -68,50 +68,89 @@ public class SimulationVisualizer : Singleton<SimulationVisualizer>
         }
     }
 
-    public void ResetHighlight(NetworkEdge[,] graph)
-    {
-        foreach (GameObject node in highlightedNodes.Values)
-        {
-            MeshRenderer renderer = node.GetComponent<MeshRenderer>();
-            renderer.material.color = standardNodeMaterial.color;
-        }
-        
-        foreach (NetworkEdge edge in highlightedEdges.Keys)
-        {
-            LineRenderer renderer = highlightedEdges[edge].GetComponent<LineRenderer>();
-            renderer.material.color = Color.HSVToRGB(0.3f, 1, 1 / (graph[edge.NodeA.Index, edge.NodeB.Index].Distance * 0.5f));
-        }
-    }
-
     public void HighlightPath(NetworkEdge[] edges)
     {
-        AdjustColorOfNode(edges[0].NodeA, Color.green);
-        
-        if(!highlightedNodes.ContainsKey(edges[0].NodeA))
-            highlightedNodes.Add(edges[0].NodeA, nodeRepresentations[edges[0].NodeA]);
+        if (!highlightedNodesTokens.ContainsKey(edges[0].NodeA))
+            highlightedNodesTokens.Add(edges[0].NodeA, 1);
+        else
+            highlightedNodesTokens[edges[0].NodeA] += 1;
         
         for (int i = 0; i < edges.Length; i++)
         {
             if (edges[i].Distance > 0)
             {
-                AdjustColorOfEdge(edges[i], 3f);
-                
-                if(!highlightedEdges.ContainsKey(edges[i]))
-                    highlightedEdges.Add(edges[i], edgeRepresentations[edges[i]]);
+                if (!highlightedEdgesTokens.ContainsKey(edges[i]))
+                    highlightedEdgesTokens.Add(edges[i], 1);
+                else
+                    highlightedEdgesTokens[edges[i]] += 1;
             }
         }
-        AdjustColorOfNode(edges[edges.Length-1].NodeB, Color.red);
-        if(!highlightedNodes.ContainsKey(edges[edges.Length-1].NodeB))
-            highlightedNodes.Add(edges[edges.Length-1].NodeB, nodeRepresentations[edges[edges.Length-1].NodeB]);
+        
+        if (!highlightedNodesTokens.ContainsKey(edges[edges.Length-1].NodeB))
+            highlightedNodesTokens.Add(edges[edges.Length-1].NodeB, 1);
+        else
+            highlightedNodesTokens[edges[edges.Length-1].NodeB] += 1;
+        
+        UpdateHighlightState(NetworkController.Instance.GetGraph());
     }
 
-    private void UpdateHighlightState()
+    public void HidePath(NetworkEdge[] edges)
     {
-        for (int i = 0; i < highlightedEdgesTokens.Keys.Count; i++)
+        if (!highlightedNodesTokens.ContainsKey(edges[0].NodeA))
+            highlightedNodesTokens.Add(edges[0].NodeA, 0);
+        else
+            highlightedNodesTokens[edges[0].NodeA] = Math.Max(0, highlightedNodesTokens[edges[0].NodeA] - 1);
+
+
+        for (int i = 0; i < edges.Length; i++)
         {
-            
+            if (edges[i].Distance > 0)
+            {
+                if (!highlightedEdgesTokens.ContainsKey(edges[i]))
+                    highlightedEdgesTokens.Add(edges[i], 0);
+                else
+                    highlightedEdgesTokens[edges[i]] = Math.Max(0, highlightedEdgesTokens[edges[i]] - 1);
+            }
         }
-    } 
+        
+        if (!highlightedNodesTokens.ContainsKey(edges[edges.Length-1].NodeB))
+            highlightedNodesTokens.Add(edges[edges.Length-1].NodeB, 0);
+        else
+            highlightedNodesTokens[edges[edges.Length-1].NodeB] = Math.Max(0, highlightedNodesTokens[edges[edges.Length-1].NodeB] - 1);
+        
+        UpdateHighlightState(NetworkController.Instance.GetGraph());
+    }
+    
+    private void UpdateHighlightState(NetworkEdge[,] graph)
+    {
+        foreach (NetworkEdge edge in highlightedEdgesTokens.Keys)
+        {
+            if (highlightedEdgesTokens[edge] > 0)
+            {
+                AdjustColorOfEdge(edge, 3f);
+            }
+            else
+            {
+                LineRenderer renderer = edgeRepresentations[edge].GetComponent<LineRenderer>();
+                renderer.material.color = Color.HSVToRGB(0.3f, 1, 1 / (graph[edge.NodeA.Index, edge.NodeB.Index].Distance * 0.5f));
+            }
+        }
+        
+        foreach (NetworkNode node in highlightedNodesTokens.Keys)
+        {
+            if (highlightedNodesTokens[node] > 0)
+            {
+                AdjustColorOfNode(node, Color.green);
+            }
+            else
+            {
+                MeshRenderer renderer = nodeRepresentations[node].GetComponent<MeshRenderer>();
+                renderer.material.color = standardNodeMaterial.color;
+            }
+        }
+    }
+
+    public Dictionary<NetworkNode, GameObject> GetNodeRepresentations() => nodeRepresentations;
 
     private void DeleteOldVisualization()
     {
