@@ -5904,7 +5904,7 @@ MonoBehaviour:
   minPos: -5
   maxPos: 5
   nodeDistance: 3
-  startOffset: {x: -20, y: 0, z: -15}
+  startOffset: {x: -20, y: 0, z: -13}
 --- !u!114 &2113189044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5917,8 +5917,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34a542fe38d244cff9edb67d9e7761f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amountOfCars: 2
-  executionIntervalLength: 0.4
+  amountOfCars: 4
+  executionIntervalLength: 0.8
 --- !u!114 &2113189045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5931,7 +5931,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82f8700d37d594b868bd04fc79d17888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeBetweenBooking: 5
+  timeBetweenBooking: 8
 --- !u!114 &2113189046
 MonoBehaviour:
   m_ObjectHideFlags: 0
