@@ -1870,7 +1870,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f0fc05586eb8486985aeb09db60cac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minAmountOfNodes: 30
+  minAmountOfNodes: 50
   maxAmountOfNodes: 50
   edgeDensity: 0.4
   seed: 6
@@ -1928,8 +1928,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34a542fe38d244cff9edb67d9e7761f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amountOfCars: 1
-  executionIntervalLength: 2
+  amountOfCars: 4
+  executionIntervalLength: 0.4
 --- !u!114 &2113189045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1942,4 +1942,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82f8700d37d594b868bd04fc79d17888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeBetweenBooking: 30
+  timeBetweenBooking: 5

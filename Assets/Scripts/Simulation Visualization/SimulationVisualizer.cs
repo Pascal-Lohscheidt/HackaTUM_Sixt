@@ -105,7 +105,13 @@ public class SimulationVisualizer : Singleton<SimulationVisualizer>
             highlightedNodes.Add(edges[edges.Length-1].NodeB, nodeRepresentations[edges[edges.Length-1].NodeB]);
     }
 
-  
+    private void UpdateHighlightState()
+    {
+        for (int i = 0; i < highlightedEdgesTokens.Keys.Count; i++)
+        {
+            
+        }
+    } 
 
     private void DeleteOldVisualization()
     {
