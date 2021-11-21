@@ -13,7 +13,7 @@ public class ShortestPathCalculator
     public static NetworkEdge[] SolveShortestPathProblem(NetworkEdge[,] graph, EdgeCost GetEdgeCost, NetworkNode entry, NetworkNode target)
     {
         List<DijkstraSolution> solutionQueue = new List<DijkstraSolution>();
-        Dictionary<int, DijkstraDeadEntry> deadEntries = new Dictionary<int, DijkstraDeadEntry>();
+        Dictionary<int, DijkstraNodePriority> deadEntries = new Dictionary<int, DijkstraNodePriority>();
         DijkstraSolution bestSolution = new DijkstraSolution();
 
         DijkstraSolution startPoint = new DijkstraSolution(graph[entry.Index, entry.Index], 0);
@@ -45,32 +45,34 @@ public class ShortestPathCalculator
         List<DijkstraSolution> queue, 
         EdgeCost GetEdgeCost,  
         out DijkstraSolution bestSolution, 
-        Dictionary<int, DijkstraDeadEntry> deadEntries)
+        Dictionary<int, DijkstraNodePriority> nodePriorities)
     {
         // 1) get min
         DijkstraSolution minSolution = GetFirstInQueue(queue);
-        
-        // => make sure it's a dead entry now! Prevent circle
-        if(!deadEntries.ContainsKey(minSolution.LastNode().Index))
-            deadEntries.Add(minSolution.LastNode().Index, new DijkstraDeadEntry(minSolution.LastNode(), minSolution.GetSolutionCost()));
-        
         // 2) Add all adjacent nodes
         for (int i = 0; i < graph.GetLength(0); i++)
         {
             NetworkEdge edge = graph[minSolution.LastNode().Index, i];
             float cost = GetEdgeCost(edge);
-            if (cost > 0)
+            if (cost > 0 && i != minSolution.NodeBeforeLastNode().Index) // No Backwards going
             {
-                if (deadEntries.ContainsKey(i))
+                             
+                if (nodePriorities.ContainsKey(i))
                 {
-                    if(deadEntries[i].Cost < minSolution.GetSolutionCost() + cost) continue;
-                    
-                    deadEntries[i] = new DijkstraDeadEntry(edge.NodeB, minSolution.GetSolutionCost() + cost);
+                    if(nodePriorities[i].Cost <= minSolution.GetSolutionCost() + cost)
+                        continue;
+                    queue.Remove(queue.Find(d => d.LastNode().Index == i));
+                    nodePriorities[i] = new DijkstraNodePriority(edge.NodeB, minSolution.GetSolutionCost() + cost);
                 }
-
+                else
+                {
+                    nodePriorities.Add(i, new DijkstraNodePriority(edge.NodeB, minSolution.GetSolutionCost() + cost));
+                }
+                
                 DijkstraSolution newSolution = minSolution.CopySolution();
                 newSolution.AddNetworkEdge(edge, cost);
                 queue.Add(newSolution);
+
             }
         }
 
@@ -93,6 +95,7 @@ public class ShortestPathCalculator
         {
             DijkstraSolution solution = edges[0];
             edges.RemoveAt(0);
+            SortQueue(edges);
             return solution;
         }
 
@@ -117,7 +120,12 @@ public class ShortestPathCalculator
             this.solutionCost = solutionCost;
         }
 
-        public DijkstraSolution CopySolution() => new DijkstraSolution(networkEdges, solutionCost);
+        public DijkstraSolution CopySolution()
+        {
+            List<NetworkEdge> newNetworkEdges = new List<NetworkEdge>();
+            newNetworkEdges.AddRange(networkEdges);
+            return new DijkstraSolution(newNetworkEdges, solutionCost);
+        }
 
         public void AddNetworkEdge(NetworkEdge networkEdge, float cost)
         {
@@ -129,14 +137,15 @@ public class ShortestPathCalculator
 
         public NetworkEdge[] GetNetworkEdges() => networkEdges.ToArray();
         public NetworkNode LastNode() => networkEdges.Last().NodeB;
+        public NetworkNode NodeBeforeLastNode() => networkEdges.Last().NodeA;
     }
 
-    public struct DijkstraDeadEntry
+    public struct DijkstraNodePriority
     {
         public NetworkNode Node { get; }
         public float Cost { get; }
 
-        public DijkstraDeadEntry(NetworkNode node, float cost)
+        public DijkstraNodePriority(NetworkNode node, float cost)
         {
             Node = node;
             Cost = cost;

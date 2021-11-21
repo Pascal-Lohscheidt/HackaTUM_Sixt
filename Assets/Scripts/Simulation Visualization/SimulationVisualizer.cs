@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SimulationVisualizer : MonoBehaviour
+public class SimulationVisualizer : Singleton<SimulationVisualizer>
 {
     [SerializeField] private GameObject nodePrefab;
     [SerializeField] private GameObject lineRendererPrefab;
@@ -9,27 +10,35 @@ public class SimulationVisualizer : MonoBehaviour
 
     [SerializeField] private float minPos;
     [SerializeField] private float maxPos;
+    [SerializeField] private float nodeDistance;
+    [SerializeField] private Vector3 startOffset;
 
     private Dictionary<NetworkNode, GameObject> nodeRepresentations = new Dictionary<NetworkNode, GameObject>();
     private Dictionary<NetworkEdge, GameObject> edgeRepresentations = new Dictionary<NetworkEdge, GameObject>();
     
     private Dictionary<NetworkEdge, GameObject> highlightedEdges = new Dictionary<NetworkEdge, GameObject>();
+    private Dictionary<NetworkEdge, int> highlightedEdgesTokens = new Dictionary<NetworkEdge, int>();
     private Dictionary<NetworkNode, GameObject> highlightedNodes = new Dictionary<NetworkNode, GameObject>();
-    public void CreateSimulationState(NetworkEdge[,] graph, NetworkNode[] nodes)
+    public void CreateSimulationState(NetworkEdge[,] graph, NetworkNode[] nodes, int graphWidth)
     {
         DeleteOldVisualization();
-        SpawnNodes(nodes);
+        SpawnNodes(nodes, graphWidth);
         SpawnEdges(graph);
     }
-
-    private void SpawnNodes(NetworkNode[] nodes)
+    
+    private void SpawnNodes(NetworkNode[] nodes, int graphWidth)
     {
+        Vector3 currentPosition = startOffset;
         for (int i = 0; i < nodes.Length; i++)
         {
-            Vector3 position = new Vector3(Random.Range(minPos, maxPos), 0, Random.Range(minPos, maxPos));
-            GameObject newNode = Instantiate(nodePrefab, position, Quaternion.identity);
+            GameObject newNode = Instantiate(nodePrefab, currentPosition, Quaternion.identity);
             nodeRepresentations.Add(nodes[i], newNode);
             newNode.GetComponent<VisualizedNode>().Node = nodes[i];
+
+            float direction = (int)Math.Floor((float)i / graphWidth) % 2 == 0 ? 1 : -1; 
+            float x = ((i + 1) % graphWidth) == 0 ? 0 : 1;
+            float z = ((i + 1) % graphWidth) == 0 ? 1 : 0;
+            currentPosition += new Vector3(x * direction, 0, z) * nodeDistance;
         }
     }
 
@@ -77,16 +86,27 @@ public class SimulationVisualizer : MonoBehaviour
     public void HighlightPath(NetworkEdge[] edges)
     {
         AdjustColorOfNode(edges[0].NodeA, Color.green);
-        highlightedNodes.Add(edges[0].NodeA, nodeRepresentations[edges[0].NodeA]);
+        
+        if(!highlightedNodes.ContainsKey(edges[0].NodeA))
+            highlightedNodes.Add(edges[0].NodeA, nodeRepresentations[edges[0].NodeA]);
+        
         for (int i = 0; i < edges.Length; i++)
         {
-            if(edges[i].Distance > 0)
+            if (edges[i].Distance > 0)
+            {
                 AdjustColorOfEdge(edges[i], 3f);
+                
+                if(!highlightedEdges.ContainsKey(edges[i]))
+                    highlightedEdges.Add(edges[i], edgeRepresentations[edges[i]]);
+            }
         }
         AdjustColorOfNode(edges[edges.Length-1].NodeB, Color.red);
-        highlightedNodes.Add(edges[edges.Length-1].NodeB, nodeRepresentations[edges[edges.Length-1].NodeB]);
+        if(!highlightedNodes.ContainsKey(edges[edges.Length-1].NodeB))
+            highlightedNodes.Add(edges[edges.Length-1].NodeB, nodeRepresentations[edges[edges.Length-1].NodeB]);
     }
-    
+
+  
+
     private void DeleteOldVisualization()
     {
         foreach (GameObject node in nodeRepresentations.Values)

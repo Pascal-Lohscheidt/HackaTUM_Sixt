@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// Contains the current state (network and cars)
 /// </summary>
-public class NetworkController : MonoBehaviour
+public class NetworkController : Singleton<NetworkController>
 {
     [SerializeField] private int minAmountOfNodes;
     [SerializeField] private int maxAmountOfNodes;
@@ -16,12 +16,11 @@ public class NetworkController : MonoBehaviour
     [SerializeField] private int maxDistance;
     [SerializeField] private int minElectricityCost;
     [SerializeField] private int maxElectricityCost;
-
+    [SerializeField] public int graphWidth;
+    
     private NetworkNode[] nodes;
     private NetworkEdge[,] graph;
 
-    
-    
     public void GenerateNewNetwork()
     {
         // 1) Generate Seed and Random object
@@ -42,20 +41,45 @@ public class NetworkController : MonoBehaviour
         
         // DFS like Generation! 
 
-        Dictionary<int, int> nodeEdgeCount = new Dictionary<int, int>();
-        for (int i = 0; i < nodes.Length; i++) nodeEdgeCount[i] = 0; // Populate the dictonary;
+        // Dictionary<int, int> nodeEdgeCount = new Dictionary<int, int>();
+        // for (int i = 0; i < nodes.Length; i++) nodeEdgeCount[i] = 0; // Populate the dictonary;
+        // PopulateRecursively(0, random, nodeEdgeCount);
         
-        PopulateRecursively(0, random, nodeEdgeCount);
+        PopulateWithGrid(random);
+    }
 
-        /*for (int i = 0; i < nodes.Length; i++)
+    private void PopulateWithGrid(System.Random random)
+    {
+        for (int i = 0; i < nodes.Length; i++)
         {
             for (int j = 0; j < nodes.Length; j++)
             {
-                Debug.Log(graph[i, j].NodeA.Index + " -> " + graph[i, j].NodeB.Index + ": " + graph[i, j].Distance);
+                graph[i, j] = new NetworkEdge(nodes[i], nodes[j], 0, 0);
+                graph[j, i] = new NetworkEdge(nodes[j], nodes[i], 0, 0);
             }
-        }*/
-    }
+        }
+        
+        for (int i = 0; i < nodes.Length - 1; i++)
+        {
+            float newDistance = minDistance + (float)random.NextDouble() * maxDistance;
+            float newElectricityCost = minElectricityCost + (float)random.NextDouble() * maxElectricityCost;
+            graph[i, i+1] = new NetworkEdge(nodes[i], nodes[i+1], newDistance, newElectricityCost);
+            graph[i+1, i] = new NetworkEdge(nodes[i+1], nodes[i], newDistance, newElectricityCost);
 
+            if (i > graphWidth)
+            {
+                int targetNode = (int)Math.Floor((float)i / graphWidth) * graphWidth - (i % graphWidth) - 1;
+                
+                if(edgeDensity > (float)random.NextDouble()) continue;
+
+                float newOtherDistance = minDistance + (float)random.NextDouble() * maxDistance;
+                float newOtherElectricityCost = minElectricityCost + (float)random.NextDouble() * maxElectricityCost;
+                graph[i, targetNode] = new NetworkEdge(nodes[i], nodes[targetNode], newOtherDistance, newOtherElectricityCost);
+                graph[targetNode, i] = new NetworkEdge(nodes[targetNode], nodes[i], newOtherDistance, newOtherElectricityCost);
+            }
+        }
+    }
+    
     private void PopulateRecursively(int node, System.Random random, Dictionary<int, int> nodeEdgeCount)
     {
         if (node < graph.GetLength(0) - 1)

@@ -544,7 +544,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 7.99
+  orthographic size: 12
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1822,6 +1822,8 @@ GameObject:
   - component: {fileID: 2113189041}
   - component: {fileID: 2113189042}
   - component: {fileID: 2113189043}
+  - component: {fileID: 2113189045}
+  - component: {fileID: 2113189044}
   m_Layer: 0
   m_Name: Simulation Controller
   m_TagString: Untagged
@@ -1841,9 +1843,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bfb3a96711f0411ea2a782fd00345d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  networkController: {fileID: 2113189041}
-  graphVisualizer: {fileID: 2113189042}
-  simulationVisualizer: {fileID: 2113189043}
 --- !u!4 &2113189040
 Transform:
   m_ObjectHideFlags: 0
@@ -1871,14 +1870,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f0fc05586eb8486985aeb09db60cac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minAmountOfNodes: 6
-  maxAmountOfNodes: 7
+  minAmountOfNodes: 30
+  maxAmountOfNodes: 50
   edgeDensity: 0.4
   seed: 6
   minDistance: 3
   maxDistance: 10
   minElectricityCost: 4
   maxElectricityCost: 7
+  graphWidth: 7
 --- !u!114 &2113189042
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1893,7 +1893,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   graphNodePrefab: {fileID: 5889105825638676889, guid: 7d9a01cd23335476dbbf64135a047e39,
     type: 3}
-  gridSpacing: 1.5
+  gridSpacing: 3
 --- !u!114 &2113189043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1914,3 +1914,32 @@ MonoBehaviour:
     type: 2}
   minPos: -5
   maxPos: 5
+  nodeDistance: 3
+  startOffset: {x: -10, y: 0, z: -10}
+--- !u!114 &2113189044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2113189038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34a542fe38d244cff9edb67d9e7761f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  amountOfCars: 1
+  executionIntervalLength: 2
+--- !u!114 &2113189045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2113189038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82f8700d37d594b868bd04fc79d17888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timeBetweenBooking: 30
