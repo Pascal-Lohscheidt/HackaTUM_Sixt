@@ -5,6 +5,7 @@ using Random = UnityEngine.Random;
 public class SimulationController : Singleton<SimulationController>
 {
     public static float timeScale;
+    private bool generatedCars = false;
     private void Start()
     {
         RegenerateSimulationState();
@@ -24,7 +25,11 @@ public class SimulationController : Singleton<SimulationController>
     public void StartSimulation()
     {
         Debug.Log("Start Simulation!");
-        CarController.Instance.GenerateCars();
+        if (!generatedCars)
+        {
+            generatedCars = true;
+            CarController.Instance.GenerateCars();
+        }
         timeScale = 1;
     }
 
